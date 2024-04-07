@@ -1,5 +1,6 @@
 public class AccountTriggerHandler
 {
+    system.debug('sanchit mittal');
     public static void handleAfterUpdate(Map<Id, Account> newMap, Map<Id, Account> oldMap)
     {
         Set<Id> accountIdsToClone = new Set<Id>();

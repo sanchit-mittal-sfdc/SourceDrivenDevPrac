@@ -1,0 +1,27 @@
+name: Salesforce Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Install Salesforce CLI
+        run: |
+          wget -qO- https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx.tar.xz | tar xJf -
+          ./sfdx/install
+        env:
+          SFDX_AUTOUPDATE_DISABLE: true
+          SFDX_USE_GENERIC_UNIX_KEYCHAIN: true
+      
+      - name: Authenticate with Salesforce
+        run: sfdx force:auth:jwt:grant --clientid ${{ secrets.SFDC_CONSUMER_KEY }} --jwtkeyfile ./server.key --username ${{ secrets.SFDC_USERNAME }} --setdefaultdevhubusername -a DevHub
+      
+      - name: Deploy to Salesforce Org
+        run: sfdx force:source:deploy -p force-app -u ${{ secrets.SFDC_USERNAME }}

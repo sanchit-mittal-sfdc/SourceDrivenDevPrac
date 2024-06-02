@@ -108,58 +108,41 @@ jobs:
 
   validate:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on:  ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
+      # Install Salesforce CLI
       - name: Install Salesforce CLI
         run: |
-          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
-          mkdir ~/sfdx
-          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
-          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
-          ~/sfdx/bin/sfdx version          
-
-      - name: Install sfdx-git-delta
-        run: sfdx plugins:install sfdx-git-delta
-
-      - name: Identify delta changes
-        id: sgd-delta
+          npm install sfdx-cli --global
+          sfdx --version
+      # SFDX-Git-Delta
+      - name: Install plugins
         run: |
-          git fetch origin main:refs/remotes/origin/main
-          sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output . --generate-delta
-
-      - name: Install Salesforce Scanner CLI
-        run: sfdx plugins:install @salesforce/sfdx-scanner
-
-      - name: Authenticate with Salesforce
+          echo y | sfdx plugins:install sfdx-git-delta
+          sfdx plugins
+      # Install utilities
+      - name: Install utilities
+        run: |
+         pip install yq
+         xq --version
+      # Checkout the code in the pull request
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      # Authenticate to target org
+      - name: "Authenticate to Org"
         env:
           SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}
           SFDX_JWT_KEY_FILE: ./server.key
           SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
         run: sfdx force:auth:jwt:grant --clientid $SFDX_CLIENT_ID --jwtkeyfile $SFDX_JWT_KEY_FILE --username $SFDX_USERNAME --setdefaultdevhubusername -a DevHub
 
-      - name: Validate delta changes in Salesforce Org
-        env:
-          SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
+      # Delta deploy
+      - name: "Delta deploy"
         run: |
-          if [ -f ".sgd/package/package.xml" ]; then
-            sfdx force:source:deploy -x .sgd/package/package.xml -u $SFDX_USERNAME --checkonly
-          else
-            echo "No changes detected."
-          fi
-
-      - name: Cleanup
-        run: |
-          rm -rf ~/sfdx
-          rm sfdx-linux-x64.tar.xz
-          rm -rf .sgd
-          rm -rf pmd-bin
-          rm pmd-bin-6.38.0.zip
-          rm -rf scanner-results
+          sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output "." -i .forceignore
+          echo "--- package.xml generated with added and modified metadata ---"
+          cat package/package.xml
+          echo "--- Delta Deploy ---"
+          sfdx force:source:deploy -x package/package.xml -w 30

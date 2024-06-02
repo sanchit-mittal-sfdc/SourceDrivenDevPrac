@@ -1,0 +1,92 @@
+name: Salesforce Deployment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    if: github.event_name == 'push'
+    runs-on:  ubuntu-latest
+    steps:
+      # Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: |
+          npm install sfdx-cli --global
+          sfdx --version
+      # SFDX-Git-Delta
+      - name: Install plugins
+        run: |
+          echo y | sfdx plugins:install sfdx-git-delta
+          sfdx plugins
+      # Install utilities
+      - name: Install utilities
+        run: |
+         pip install yq
+         xq --version
+      # Checkout the code in the pull request
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      # Authenticate to target org
+      - name: "Authenticate to Org"
+        env:
+          SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}
+          SFDX_JWT_KEY_FILE: ./server.key
+          SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
+        run: sfdx force:auth:jwt:grant --clientid $SFDX_CLIENT_ID --jwtkeyfile $SFDX_JWT_KEY_FILE --username $SFDX_USERNAME --setdefaultdevhubusername -a DevHub
+
+      # Delta deploy
+      - name: "Delta deploy"
+        run: |
+          sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output "." -i .forceignore
+          echo "--- package.xml generated with added and modified metadata ---"
+          cat package/package.xml
+          echo "--- Delta Deploy ---"
+          sfdx force:source:deploy -x package/package.xml -u ${{ secrets.SFDC_USERNAME }}
+
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on:  ubuntu-latest
+    steps:
+      # Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: |
+          npm install sfdx-cli --global
+          sfdx --version
+      # SFDX-Git-Delta
+      - name: Install plugins
+        run: |
+          echo y | sfdx plugins:install sfdx-git-delta
+          sfdx plugins
+      # Install utilities
+      - name: Install utilities
+        run: |
+         pip install yq
+         xq --version
+      # Checkout the code in the pull request
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      # Authenticate to target org
+      - name: "Authenticate to Org"
+        env:
+          SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}
+          SFDX_JWT_KEY_FILE: ./server.key
+          SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
+        run: sfdx force:auth:jwt:grant --clientid $SFDX_CLIENT_ID --jwtkeyfile $SFDX_JWT_KEY_FILE --username $SFDX_USERNAME --setdefaultdevhubusername -a DevHub
+
+      # Delta deploy
+      - name: "Delta deploy"
+        run: |
+          sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output "." -i .forceignore
+          echo "--- package.xml generated with added and modified metadata ---"
+          cat package/package.xml
+          echo "--- Delta Deploy ---"
+          sfdx force:source:deploy -x package/package.xml -c -u ${{ secrets.SFDC_USERNAME }}

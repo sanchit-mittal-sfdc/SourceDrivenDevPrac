@@ -44,7 +44,7 @@ jobs:
       # Delta deploy
       - name: "Delta deploy"
         run: |
-          sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output "." -i .forceignore
+          sfdx sgd:source:delta --to "HEAD" --from "HEAD^" --output "." -i .forceignore
           echo "--- package.xml generated with added and modified metadata ---"
           cat package/package.xml
           echo "--- Delta Deploy ---"

@@ -2,7 +2,8 @@ public without sharing class AccountTriggerHandler
 {
     public static void handleAfterUpdate(Map<Id, Account> newMap, Map<Id, Account> oldMap)
     {
-        system.debug('Testing delta deployment 1.0 CI/CD pipeline');
+        system.debug('Hello world');
+        system.debug('Testing delta deployment 1.1 CI/CD pipeline');
         Set<Id> accountIdsToClone = new Set<Id>();
 
         for(Account a : newMap.values())

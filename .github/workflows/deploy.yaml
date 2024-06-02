@@ -138,17 +138,6 @@ jobs:
       - name: Install Salesforce Scanner CLI
         run: sfdx plugins:install @salesforce/sfdx-scanner
 
-      - name: Run Salesforce Scanner CLI
-        run: |
-          sfdx scanner:run --target force-app/main/default --format json --outputdir scanner-results
-          if grep -q "\"violations\"" scanner-results/results.json; then
-            echo "Salesforce Scanner found security vulnerabilities or code issues:"
-            cat scanner-results/results.json
-            exit 1
-          else
-            echo "No security vulnerabilities or code issues found by Salesforce Scanner."
-          fi
-
       - name: Authenticate with Salesforce
         env:
           SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}

@@ -20,6 +20,14 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
+          
+      - name: Install Salesforce CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
+          mkdir ~/sfdx
+          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
+          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
+          ~/sfdx/bin/sfdx version          
 
       - name: Install sfdx-git-delta
         run: npm install -g sfdx-git-delta
@@ -28,7 +36,7 @@ jobs:
         id: sgd-delta
         run: |
           git fetch origin main:refs/remotes/origin/main
-          sgd --to "HEAD" --from "origin/main" --output . --generate-delta
+          sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output . --generate-delta
 
       - name: Install PMD
         run: |
@@ -48,16 +56,6 @@ jobs:
           else
             echo "No PMD issues found in the Apex code."
           fi
-
-      - name: Install Salesforce CLI
-        env:
-          SFDX_CLI_VERSION: "7.120.0"
-        run: |
-          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
-          mkdir ~/sfdx
-          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
-          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
-          ~/sfdx/bin/sfdx version
 
       - name: Install Salesforce Scanner CLI
         run: sfdx plugins:install @salesforce/sfdx-scanner
@@ -134,6 +132,14 @@ jobs:
         with:
           node-version: '14'
 
+      - name: Install Salesforce CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
+          mkdir ~/sfdx
+          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
+          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
+          ~/sfdx/bin/sfdx version          
+
       - name: Install sfdx-git-delta
         run: npm install -g sfdx-git-delta
 
@@ -141,7 +147,7 @@ jobs:
         id: sgd-delta
         run: |
           git fetch origin main:refs/remotes/origin/main
-          sgd --to "HEAD" --from "origin/main" --output . --generate-delta
+          sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output . --generate-delta
 
       - name: Install PMD
         run: |
@@ -161,16 +167,6 @@ jobs:
           else
             echo "No PMD issues found in the Apex code."
           fi
-
-      - name: Install Salesforce CLI
-        env:
-          SFDX_CLI_VERSION: "7.120.0"
-        run: |
-          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
-          mkdir ~/sfdx
-          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
-          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
-          ~/sfdx/bin/sfdx version
 
       - name: Install Salesforce Scanner CLI
         run: sfdx plugins:install @salesforce/sfdx-scanner

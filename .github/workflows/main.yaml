@@ -89,6 +89,7 @@ jobs:
             exit 1
           else
             echo "No PMD issues found in the Apex code."
+            cat pmd-report.txt
           fi  
 
       # Authenticate to target org

@@ -75,13 +75,19 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-       
-      # Run apex test only if pmd check is successful, otherwise this will not execute since we used EXIT 1 above on error
-      - name: Run Apex Tests  
+
+      # Authenticate to target org
+      - name: "Authenticate to Org"
         env:
+          SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}
+          SFDX_JWT_KEY_FILE: ./server.key
           SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
+        run: sfdx force:auth:jwt:grant --clientid $SFDX_CLIENT_ID --jwtkeyfile $SFDX_JWT_KEY_FILE --username $SFDX_USERNAME --setdefaultdevhubusername -a DevHub
+ 
+      # Run apex test only if pmd check is successful, otherwise this will not execute since we used EXIT 1 above on error
+      - name: Run Apex Tests
         run: |
-          sfdx apex:run:test --test-level RunLocalTests --output-dir test-results --result-format human --code-coverage --target-org $SFDX_USERNAME
+          sfdx apex:run:test --test-level RunLocalTests --output-dir test-results --result-format human --code-coverage --target-org ${{ secrets.SFDC_USERNAME }}
           if grep -q "Fail" test-results/test-result-*.json; then
             echo "Some Apex tests failed:"
             cat test-results/test-result-*.json
@@ -117,14 +123,6 @@ jobs:
             echo "No PMD issues found in the Apex code."
             cat pmd-report.txt
           fi
-
-      # Authenticate to target org
-      - name: "Authenticate to Org"
-        env:
-          SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}
-          SFDX_JWT_KEY_FILE: ./server.key
-          SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
-        run: sfdx force:auth:jwt:grant --clientid $SFDX_CLIENT_ID --jwtkeyfile $SFDX_JWT_KEY_FILE --username $SFDX_USERNAME --setdefaultdevhubusername -a DevHub
 
       # Delta deploy
       - name: "Delta deploy"

@@ -76,9 +76,11 @@ jobs:
           fetch-depth: 0
        
       # Run apex test only if pmd check is successful, otherwise this will not execute since we used EXIT 1 above on error
-      - name: Run Apex Tests
+      - name: Run Apex Tests  
+        env:
+          SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
         run: |
-          sfdx force:apex:test:run -u ${{ secrets.SFDC_USERNAME }} --resultformat human --codecoverage --outputdir test-results --wait 10
+          sf apex run test --test-level RunLocalTests --output-dir test-results --result-format human --code-coverage --target-org $SFDX_USERNAME
           if grep -q "Fail" test-results/test-result-*.json; then
             echo "Some Apex tests failed:"
             cat test-results/test-result-*.json
@@ -114,7 +116,7 @@ jobs:
             echo "No PMD issues found in the Apex code."
             cat pmd-report.txt
           fi
-              
+
       # Authenticate to target org
       - name: "Authenticate to Org"
         env:

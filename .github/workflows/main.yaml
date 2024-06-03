@@ -83,7 +83,7 @@ jobs:
       # Check PMD Report
       - name: Check PMD Report
         run: |
-          if grep -q "Problem" pmd-report.txt; then
+          if grep -q "force-app/main/default/" pmd-report.txt; then
             echo "PMD found issues in the Apex code:"
             cat pmd-report.txt
             exit 1

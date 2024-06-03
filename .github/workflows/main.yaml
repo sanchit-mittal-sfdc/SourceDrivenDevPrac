@@ -81,7 +81,7 @@ jobs:
         env:
           SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
         run: |
-          sf apex run test --test-level RunLocalTests --output-dir test-results --result-format human --code-coverage --target-org $SFDX_USERNAME
+          sfdx apex:run:test --test-level RunLocalTests --output-dir test-results --result-format human --code-coverage --target-org $SFDX_USERNAME
           if grep -q "Fail" test-results/test-result-*.json; then
             echo "Some Apex tests failed:"
             cat test-results/test-result-*.json

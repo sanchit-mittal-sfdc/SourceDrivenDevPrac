@@ -78,7 +78,17 @@ jobs:
       - name: Setup PMD
         uses: legetz/setup-pmd@7.1.0
       - name: APEX full scan for design rules only
-        run: pmd check -d force-app/main/default/classes -R apex-ruleset.xml -f text
+        run: pmd check -d force-app/main/default/classes -R apex-ruleset.xml -f text -r pmd-report.txt
+      # Check PMD Report
+      - name: Check PMD Report
+        run: |
+          if grep -q "Problem" pmd-report.txt; then
+            echo "PMD found issues in the Apex code:"
+            cat pmd-report.txt
+            exit 1
+          else
+            echo "No PMD issues found in the Apex code."
+          fi  
 
       # Authenticate to target org
       - name: "Authenticate to Org"

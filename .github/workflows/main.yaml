@@ -87,7 +87,7 @@ jobs:
       # Run apex test only if pmd check is successful, otherwise this will not execute since we used EXIT 1 above on error
       - name: Run Apex Tests
         run: |
-          sf apex run test --test-level RunAllTestsInOrg -d test-results -r human -c -o ${{ secrets.SFDC_USERNAME }}
+          sf apex run test --test-level RunAllTestsInOrg -d test-results -r human -c -o ${{ secrets.SFDC_USERNAME }} -w 10
           if grep -q "Fail" test-results/test-result-*.json; then
             echo "Some Apex tests failed:"
             cat test-results/test-result-*.json

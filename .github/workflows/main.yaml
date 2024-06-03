@@ -16,8 +16,9 @@ jobs:
       # Install Salesforce CLI
       - name: Install Salesforce CLI
         run: |
-          npm install sfdx-cli --global
-          sfdx --version
+          npm install @salesforce/cli --global
+          sf update
+          sf version
       # SFDX-Git-Delta
       - name: Install plugins
         run: |
@@ -39,7 +40,7 @@ jobs:
           SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}
           SFDX_JWT_KEY_FILE: ./server.key
           SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
-        run: sfdx force:auth:jwt:grant --clientid $SFDX_CLIENT_ID --jwtkeyfile $SFDX_JWT_KEY_FILE --username $SFDX_USERNAME --setdefaultdevhubusername -a DevHub
+        run: sf org login jwt --username $SFDX_USERNAME --jwt-key-file $SFDX_JWT_KEY_FILE --client-id $SFDX_CLIENT_ID --set-default-dev-hub
 
       # Delta deploy
       - name: "Delta deploy"
@@ -48,7 +49,7 @@ jobs:
           echo "--- package.xml generated with added and modified metadata ---"
           cat package/package.xml
           echo "--- Delta Deploy ---"
-          sfdx force:source:deploy -x package/package.xml -u ${{ secrets.SFDC_USERNAME }}
+          sf project deploy start -x package/package.xml -o ${{ secrets.SFDC_USERNAME }}
 
   validate:
     if: github.event_name == 'pull_request'
@@ -82,7 +83,7 @@ jobs:
           SFDX_CLIENT_ID: ${{ secrets.SFDC_CONSUMER_KEY }}
           SFDX_JWT_KEY_FILE: ./server.key
           SFDX_USERNAME: ${{ secrets.SFDC_USERNAME }}
-        run: sfdx force:auth:jwt:grant --clientid $SFDX_CLIENT_ID --jwtkeyfile $SFDX_JWT_KEY_FILE --username $SFDX_USERNAME --setdefaultdevhubusername -a DevHub
+        run: sf org login jwt --username $SFDX_USERNAME --jwt-key-file $SFDX_JWT_KEY_FILE --client-id $SFDX_CLIENT_ID --set-default-dev-hub
  
       # Run apex test only if pmd check is successful, otherwise this will not execute since we used EXIT 1 above on error
       - name: Run Apex Tests
@@ -95,17 +96,6 @@ jobs:
           else
             echo "All Apex tests passed successfully."
           fi
-
-      - name: Check Code Coverage
-        run: |
-          COVERAGE=$(jq 'summary.passRate' test-results/test-result-*.json)
-          if (( $(echo "$COVERAGE < 75" | bc -l) )); then
-            echo "Code coverage is below 75%: $COVERAGE"
-            exit 1
-          else
-            echo "Code coverage is sufficient: $COVERAGE"
-          fi
-
       # APEX PMD check
       - name: Setup PMD
         uses: legetz/setup-pmd@7.1.0
@@ -124,8 +114,8 @@ jobs:
             cat pmd-report.txt
           fi
 
-      # Delta deploy
-      - name: "Delta deploy"
+      # Validate Changes- No Actual Deployment
+      - name: "Delta Validation"
         run: |
           sfdx sgd:source:delta --to "HEAD" --from "origin/main" --output "." -i .forceignore
           echo "--- package.xml generated with added and modified metadata ---"

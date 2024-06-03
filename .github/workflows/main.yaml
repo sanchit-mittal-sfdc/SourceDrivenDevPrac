@@ -98,7 +98,7 @@ jobs:
 
       - name: Check Code Coverage
         run: |
-          COVERAGE=$(jq '.summary.passRate' test-results/test-result-*.json)
+          COVERAGE=$(jq 'summary.passRate' test-results/test-result-*.json)
           if (( $(echo "$COVERAGE < 75" | bc -l) )); then
             echo "Code coverage is below 75%: $COVERAGE"
             exit 1

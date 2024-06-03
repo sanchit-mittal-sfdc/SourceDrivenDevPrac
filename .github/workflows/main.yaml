@@ -17,7 +17,7 @@ jobs:
       - name: Install Salesforce CLI
         run: |
           npm install @salesforce/cli --global
-          sf update
+          npm update --global @salesforce/cli
           sf version
       # SFDX-Git-Delta
       - name: Install plugins
@@ -59,7 +59,7 @@ jobs:
       - name: Install Salesforce CLI
         run: |
           npm install @salesforce/cli --global
-          sf update
+          npm update --global @salesforce/cli
           sf version
       # SFDX-Git-Delta
       - name: Install plugins

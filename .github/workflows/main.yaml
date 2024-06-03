@@ -58,6 +58,7 @@ jobs:
       - name: Install Salesforce CLI
         run: |
           npm install sfdx-cli --global
+          sfdx update
           sfdx --version
       # SFDX-Git-Delta
       - name: Install plugins

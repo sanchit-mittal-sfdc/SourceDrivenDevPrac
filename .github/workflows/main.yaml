@@ -57,9 +57,9 @@ jobs:
       # Install Salesforce CLI
       - name: Install Salesforce CLI
         run: |
-          npm install sfdx-cli --global
-          sfdx update
-          sfdx --version
+          npm install @salesforce/cli --global
+          sf update
+          sf version
       # SFDX-Git-Delta
       - name: Install plugins
         run: |
@@ -87,7 +87,7 @@ jobs:
       # Run apex test only if pmd check is successful, otherwise this will not execute since we used EXIT 1 above on error
       - name: Run Apex Tests
         run: |
-          sfdx force:apex:test:run --testlevel RunSpecifiedTests --classnames SampleTestClass -d test-results -r human -c -u ${{ secrets.SFDC_USERNAME }}
+          sf apex run test --test-level RunLocalTests -d test-results -r human -c -o ${{ secrets.SFDC_USERNAME }}
           if grep -q "Fail" test-results/test-result-*.json; then
             echo "Some Apex tests failed:"
             cat test-results/test-result-*.json

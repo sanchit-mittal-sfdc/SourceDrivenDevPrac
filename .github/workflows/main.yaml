@@ -49,7 +49,7 @@ jobs:
           echo "--- package.xml generated with added and modified metadata ---"
           cat package/package.xml
           echo "--- Delta Deploy ---"
-          sf project deploy start -x package/package.xml -o ${{ secrets.SFDC_USERNAME }}
+          sf project deploy start -l RunLocalTests -x package/package.xml -o ${{ secrets.SFDC_USERNAME }}
 
   validate:
     if: github.event_name == 'pull_request'
@@ -88,7 +88,7 @@ jobs:
       # Run apex test only if pmd check is successful, otherwise this will not execute since we used EXIT 1 above on error
       - name: Run Apex Tests
         run: |
-          sf apex run test --test-level RunSpecifiedTests -n SampleTestClass -d test-results -r json -c -o ${{ secrets.SFDC_USERNAME }} -w 10
+          sf apex run test --test-level RunLocalTests -d test-results -r json -c -o ${{ secrets.SFDC_USERNAME }} -w 10
           if grep -q "Fail" test-results/test-result-*.json; then
             echo "Some Apex tests failed:"
             cat test-results/test-result-*.json

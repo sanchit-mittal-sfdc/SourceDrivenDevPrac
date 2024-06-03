@@ -77,8 +77,9 @@ jobs:
       # APEX PMD check
       - name: Setup PMD
         uses: legetz/setup-pmd@7.1.0
-      - name: APEX full scan for design rules only
-        run: pmd check -d force-app/main/default/classes -R apex-ruleset.xml -f text > pmd-report.txt
+      - name: Run PMD scan
+        run: pmd check -d force-app/main/default/classes -R apex-ruleset.xml -f text -r pmd-report.txt
+        continue-on-error: true
       # Check PMD Report
       - name: Check PMD Report
         run: |

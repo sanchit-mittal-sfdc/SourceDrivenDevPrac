@@ -74,6 +74,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      # APEX PMD check
+      - name: Setup PMD
+        uses: legetz/setup-pmd@7.1.0
+      - name: APEX full scan for design rules only
+        run: pmd check -d force-app/main/default/classes -R apex-ruleset.xml -f text
+
       # Authenticate to target org
       - name: "Authenticate to Org"
         env:
